@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            text-align: center;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            width: 250px;
+            margin: 0 auto;
+        }
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+        
+    </style>
+</head>
+<body>
+    <h3>Tasks</h3>
+    <input type="text" id="taskInput" placeholder="Add a new task.." />
+    <button id="addTask">Add</button>
+    <br/>
+    <br/>
+    <ul id="taskList">
+        <!-- task akan muncul di sini -->
+    </ul>
+
+    <script>
+        // ambil elemen HTML
+        let taskInput = document.getElementById("taskInput")
+        let taskList = document.getElementById("taskList")
+
+        // fungsi bikin satu item task
+        function addTask(text, done = false) {
+            let li = document.createElement("li")
+
+            // checkbox
+            let checkbox = document.createElement("input")
+            checkbox.type = "checkbox"
+            checkbox.checked = done
+            
+            // teks task
+            let span = document.createElement("span")
+            span.textContent = text
+            if (done) span.style.textDecoration = "line-through"
+
+            // tombol Delete
+            let deleteBtn = document.createElement("button")
+            deleteBtn.textContent = "Delete"
+
+            // rakit semua ke dalam <li>
+            let leftDiv = document.createElement("div")
+            leftDiv.appendChild(checkbox)
+            leftDiv.appendChild(span)
+
+            li.appendChild(leftDiv)
+            li.appendChild(deleteBtn)
+            taskList.appendChild(li)
+
+            // checkbox — coret teks kalau dicentang
+            checkbox.addEventListener("change", function() {
+                if (checkbox.checked) {
+                    span.style.textDecoration = "line-through"
+                } else {
+                    span.style.textDecoration = "none"
+                }
+                saveTasks()
+            })
+
+            // Delete — hapus task
+            deleteBtn.addEventListener("click", function() {
+                taskList.removeChild(li)
+                saveTasks()
+            })
+        }
+
+        // tombol Add — tambah task baru
+        document.getElementById("addTask").addEventListener("click", function() {
+            let text = taskInput.value.trim()
+            if (text === "") return       // kalau kosong, stop
+            addTask(text)
+            taskInput.value = ""          // kosongin input
+            saveTasks()
+        })
+
+        // tekan Enter juga bisa add task
+        taskInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                document.getElementById("addTask").click()
+            }
+        })
+
+        // ---- LOCAL STORAGE ----
+
+        // simpan semua task ke local storage
+        function saveTasks() {
+            let tasks = []
+            taskList.querySelectorAll("li").forEach(function(li) {
+                tasks.push({
+                    text: li.querySelector("span").textContent,
+                    done: li.querySelector("input[type=checkbox]").checked
+                })
+            })
+            localStorage.setItem("tasks", JSON.stringify(tasks))
+        }
+
+        // load task dari local storage waktu halaman dibuka
+        function loadTasks() {
+            let saved = localStorage.getItem("tasks")
+            if (saved) {
+                JSON.parse(saved).forEach(function(task) {
+                    addTask(task.text, task.done)
+                })
+            }
+        }
+
+        loadTasks()
+    </script>
+
+</body>
+</html>
